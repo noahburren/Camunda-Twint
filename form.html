@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Empfänger und Betrag angeben</title>
+  </head>
+  <body>
+    <h1>Empfänger und Betrag angeben</h1>
+
+    <form id="paymentForm">
+      <label for="empfaenger">Empfänger:</label><br />
+      <input
+        type="text"
+        id="empfaenger"
+        name="empfaenger"
+        required
+      /><br /><br />
+
+      <label for="betrag">Betrag:</label><br />
+      <input
+        type="number"
+        id="betrag"
+        name="betrag"
+        min="0.01"
+        step="0.01"
+        required
+      /><br /><br />
+
+      <button type="submit">Absenden</button>
+    </form>
+
+    <script>
+      const urlParams = new URLSearchParams(window.location.search);
+      const processInstanceId = urlParams.get("processInstanceId");
+
+      document
+        .getElementById("paymentForm")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+
+          const empfaenger = document.getElementById("empfaenger").value;
+          const betrag = parseFloat(document.getElementById("betrag").value);
+
+          try {
+            // Task abrufen für diesen Prozess (User Task "Empfänger und Betrag angeben")
+            const tasksResponse = await fetch(
+              `http://localhost:8080/engine-rest/task?processInstanceId=${processInstanceId}&taskDefinitionKey=Activity_0ftqhdn`
+            );
+            const tasks = await tasksResponse.json();
+            if (tasks.length === 0) throw new Error("Keine User Task gefunden");
+
+            const taskId = tasks[0].id;
+
+            // Task mit Variablen abschließen (Empfänger + Betrag)
+            const completeResponse = await fetch(
+              `http://localhost:8080/engine-rest/task/${taskId}/complete`,
+              {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  variables: {
+                    varReceive: { value: empfaenger, type: "String" },
+                    varAmount: { value: betrag, type: "Double" },
+                  },
+                }),
+              }
+            );
+
+            if (!completeResponse.ok)
+              throw new Error("Task konnte nicht abgeschlossen werden");
+
+            alert("Daten gesendet! Warte auf Bestätigung.");
+            window.location.href = `confirmation.html?processInstanceId=${processInstanceId}&empfaenger=${encodeURIComponent(
+              empfaenger
+            )}&betrag=${betrag}`;
+          } catch (err) {
+            alert("Fehler: " + err.message);
+          }
+        });
+    </script>
+  </body>
+</html>

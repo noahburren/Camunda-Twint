@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Zahlung auswählen</title>
+  </head>
+  <body>
+    <h1>Zahlung auswählen</h1>
+    <button id="startPayment">Zahlung senden auswählen</button>
+
+    <script>
+      const startPaymentBtn = document.getElementById("startPayment");
+
+      startPaymentBtn.addEventListener("click", async () => {
+        try {
+          // Start den User1 Prozess
+          const response = await fetch(
+            "http://localhost:8080/engine-rest/process-definition/key/Process_06c2n2l/start",
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({}),
+            }
+          );
+          if (!response.ok) throw new Error("Prozessstart fehlgeschlagen");
+
+          const data = await response.json();
+          alert("Prozess gestartet! Jetzt Empfänger und Betrag eingeben.");
+          window.location.href = "form.html?processInstanceId=" + data.id;
+        } catch (e) {
+          alert("Fehler: " + e.message);
+        }
+      });
+    </script>
+  </body>
+</html>

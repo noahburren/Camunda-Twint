@@ -9,7 +9,7 @@
     <bpmn:messageFlow id="Flow_1ejc03k" sourceRef="Event_1e9ynrk" targetRef="Event_0sv0toe" />
     <bpmn:messageFlow id="Flow_0jr4849" sourceRef="Event_0c5v6kl" targetRef="Event_1g64d4d" />
   </bpmn:collaboration>
-  <bpmn:process id="Process_06c2n2l" isExecutable="false">
+  <bpmn:process id="Process_06c2n2l" name="User 1" isExecutable="true" camunda:historyTimeToLive="P30D">
     <bpmn:startEvent id="Event_0rafbsf" name="App öffnen">
       <bpmn:outgoing>Flow_0bf39as</bpmn:outgoing>
     </bpmn:startEvent>
@@ -54,44 +54,37 @@
       <bpmn:incoming>Flow_06ldmh9</bpmn:incoming>
       <bpmn:outgoing>Flow_0k4c5fl</bpmn:outgoing>
     </bpmn:userTask>
-    <bpmn:task id="Activity_0yz0gc5" name="Zahlung Senden auswählen">
-      <bpmn:incoming>Flow_0bf39as</bpmn:incoming>
-      <bpmn:outgoing>Flow_1ebflao</bpmn:outgoing>
-    </bpmn:task>
     <bpmn:userTask id="Activity_1uc7iyv" name="Fehlermeldung">
       <bpmn:incoming>Flow_1rxchm0</bpmn:incoming>
       <bpmn:outgoing>Flow_0i5p9r2</bpmn:outgoing>
     </bpmn:userTask>
+    <bpmn:userTask id="Activity_0yz0gc5" name="Zahlung Senden auswählen">
+      <bpmn:extensionElements />
+      <bpmn:incoming>Flow_0bf39as</bpmn:incoming>
+      <bpmn:outgoing>Flow_1ebflao</bpmn:outgoing>
+    </bpmn:userTask>
   </bpmn:process>
-  <bpmn:process id="Process_1u9y96s" isExecutable="false">
+  <bpmn:process id="Process_1u9y96s" name="Twint" isExecutable="true" camunda:historyTimeToLive="P30D">
     <bpmn:startEvent id="Event_1hybq9t" name="Anfrage des Benutzers erhalten">
       <bpmn:outgoing>Flow_1q8gmby</bpmn:outgoing>
-      <bpmn:messageEventDefinition id="MessageEventDefinition_1niyg84" />
+      <bpmn:messageEventDefinition id="MessageEventDefinition_1niyg84" messageRef="Message_1jtb1ls" />
     </bpmn:startEvent>
-    <bpmn:serviceTask id="Activity_0z8t73q" name="Prüfe Saldo User 1">
-      <bpmn:incoming>Flow_1q8gmby</bpmn:incoming>
-      <bpmn:outgoing>Flow_01wpnbc</bpmn:outgoing>
-    </bpmn:serviceTask>
     <bpmn:exclusiveGateway id="Gateway_07pz1fe" name="Saldo ausreichend">
       <bpmn:incoming>Flow_01wpnbc</bpmn:incoming>
       <bpmn:outgoing>Flow_0g8eqr9</bpmn:outgoing>
       <bpmn:outgoing>Flow_1ywz2zm</bpmn:outgoing>
     </bpmn:exclusiveGateway>
     <bpmn:sequenceFlow id="Flow_01wpnbc" sourceRef="Activity_0z8t73q" targetRef="Gateway_07pz1fe" />
-    <bpmn:sequenceFlow id="Flow_0g8eqr9" name="Ja" sourceRef="Gateway_07pz1fe" targetRef="Activity_12rgdu2" />
-    <bpmn:sequenceFlow id="Flow_1ywz2zm" name="Nein" sourceRef="Gateway_07pz1fe" targetRef="Event_1e9ynrk" />
+    <bpmn:sequenceFlow id="Flow_0g8eqr9" name="Ja" sourceRef="Gateway_07pz1fe" targetRef="Activity_12rgdu2">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${Saldo == true}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_1ywz2zm" name="Nein" sourceRef="Gateway_07pz1fe" targetRef="Event_1e9ynrk">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${Saldo == false}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
     <bpmn:sequenceFlow id="Flow_0y9qs1s" sourceRef="Activity_12rgdu2" targetRef="Activity_0hbzisz" />
     <bpmn:sequenceFlow id="Flow_1lu1l08" sourceRef="Activity_0hbzisz" targetRef="Event_1mvzrz0" />
     <bpmn:sequenceFlow id="Flow_0jitp4u" sourceRef="Event_1mvzrz0" targetRef="Event_0c5v6kl" />
     <bpmn:sequenceFlow id="Flow_1q8gmby" sourceRef="Event_1hybq9t" targetRef="Activity_0z8t73q" />
-    <bpmn:serviceTask id="Activity_0hbzisz" name="Betrag bei User 2 gutschreiben">
-      <bpmn:incoming>Flow_0y9qs1s</bpmn:incoming>
-      <bpmn:outgoing>Flow_1lu1l08</bpmn:outgoing>
-    </bpmn:serviceTask>
-    <bpmn:serviceTask id="Activity_12rgdu2" name="Betrag bei User 1 abbuchen">
-      <bpmn:incoming>Flow_0g8eqr9</bpmn:incoming>
-      <bpmn:outgoing>Flow_0y9qs1s</bpmn:outgoing>
-    </bpmn:serviceTask>
     <bpmn:sequenceFlow id="Flow_0pwr2y3" sourceRef="Event_0c5v6kl" targetRef="Event_0ae8r55" />
     <bpmn:sequenceFlow id="Flow_0bqbtr6" sourceRef="Event_1e9ynrk" targetRef="Event_1kbw4ds" />
     <bpmn:intermediateThrowEvent id="Event_1mvzrz0" name="User 1 Informieren">
@@ -102,7 +95,7 @@
     <bpmn:intermediateThrowEvent id="Event_0c5v6kl" name="User 2 informieren">
       <bpmn:incoming>Flow_0jitp4u</bpmn:incoming>
       <bpmn:outgoing>Flow_0pwr2y3</bpmn:outgoing>
-      <bpmn:messageEventDefinition id="MessageEventDefinition_1eqehj6" messageRef="Message_1jtb1ls" camunda:expression="#{execution.getProcessEngineServices().getRuntimeService().createMessageCorrelation(&#39;SaldoGenuegend&#39;).setVariable(&#34;Anfrage,false).correlate()}" />
+      <bpmn:messageEventDefinition id="MessageEventDefinition_1eqehj6" messageRef="Message_1jtb1ls" camunda:expression="#{execution.getProcessEngineServices().getRuntimeService().createMessageCorrelation(&#39;SaldoGenuegend&#39;).correlate()}" />
     </bpmn:intermediateThrowEvent>
     <bpmn:endEvent id="Event_0ae8r55">
       <bpmn:incoming>Flow_0pwr2y3</bpmn:incoming>
@@ -115,12 +108,24 @@
       <bpmn:outgoing>Flow_0bqbtr6</bpmn:outgoing>
       <bpmn:messageEventDefinition id="MessageEventDefinition_06e6af5" messageRef="Message_301c5k9" camunda:expression="#{execution.getProcessEngineServices().getRuntimeService().createMessageCorrelation(&#39;SaldoGenuegend&#39;).setVariable(&#34;Saldo&#34;,false).correlate()}" />
     </bpmn:intermediateThrowEvent>
+    <bpmn:task id="Activity_0z8t73q" name="Prüfe Saldo User 1">
+      <bpmn:incoming>Flow_1q8gmby</bpmn:incoming>
+      <bpmn:outgoing>Flow_01wpnbc</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Activity_12rgdu2" name="Betrag bei User 1 abbuchen">
+      <bpmn:incoming>Flow_0g8eqr9</bpmn:incoming>
+      <bpmn:outgoing>Flow_0y9qs1s</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Activity_0hbzisz" name="Betrag bei User 2 gutschreiben">
+      <bpmn:incoming>Flow_0y9qs1s</bpmn:incoming>
+      <bpmn:outgoing>Flow_1lu1l08</bpmn:outgoing>
+    </bpmn:task>
   </bpmn:process>
-  <bpmn:process id="Process_1u7ky5a" isExecutable="false">
+  <bpmn:process id="Process_1u7ky5a" name="User 2" isExecutable="true" camunda:historyTimeToLive="P30D">
     <bpmn:sequenceFlow id="Flow_0mwrl7t" sourceRef="Activity_1udgt8t" targetRef="Event_0qehj6h" />
     <bpmn:startEvent id="Event_1g64d4d" name="Mitteilung von Twint erhalten">
       <bpmn:outgoing>Flow_1jlilnf</bpmn:outgoing>
-      <bpmn:messageEventDefinition id="MessageEventDefinition_0wueusx" messageRef="Message_1jtb1ls" />
+      <bpmn:messageEventDefinition id="MessageEventDefinition_0wueusx" messageRef="Message_301c5k9" />
     </bpmn:startEvent>
     <bpmn:sequenceFlow id="Flow_1jlilnf" sourceRef="Event_1g64d4d" targetRef="Activity_1udgt8t" />
     <bpmn:userTask id="Activity_1udgt8t" name="Zahlung erhalten">
@@ -174,11 +179,11 @@
       <bpmndi:BPMNShape id="Activity_0l4hcht_di" bpmnElement="Activity_1qilexz">
         <dc:Bounds x="1150" y="230" width="100" height="80" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_1tmotpq_di" bpmnElement="Activity_0yz0gc5">
-        <dc:Bounds x="310" y="230" width="100" height="80" />
-      </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_0d8xkc0_di" bpmnElement="Activity_1uc7iyv">
         <dc:Bounds x="520" y="110" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_12hjm5m_di" bpmnElement="Activity_0yz0gc5">
+        <dc:Bounds x="310" y="230" width="100" height="80" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge id="Flow_0bf39as_di" bpmnElement="Flow_0bf39as">
         <di:waypoint x="258" y="270" />
@@ -233,20 +238,11 @@
           <dc:Bounds x="280" y="655" width="60" height="40" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_0fmyxdz_di" bpmnElement="Activity_0z8t73q">
-        <dc:Bounds x="520" y="530" width="100" height="80" />
-      </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Gateway_07pz1fe_di" bpmnElement="Gateway_07pz1fe" isMarkerVisible="true">
         <dc:Bounds x="665" y="545" width="50" height="50" />
         <bpmndi:BPMNLabel>
           <dc:Bounds x="660" y="507.5" width="60" height="27" />
         </bpmndi:BPMNLabel>
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_1580i4m_di" bpmnElement="Activity_0hbzisz">
-        <dc:Bounds x="910" y="530" width="100" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_189xn6h_di" bpmnElement="Activity_12rgdu2">
-        <dc:Bounds x="760" y="530" width="100" height="80" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Event_004kuy4_di" bpmnElement="Event_1mvzrz0">
         <dc:Bounds x="1062" y="552" width="36" height="36" />
@@ -271,6 +267,15 @@
         <bpmndi:BPMNLabel>
           <dc:Bounds x="862" y="685" width="56" height="27" />
         </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1ds1o0a_di" bpmnElement="Activity_0z8t73q">
+        <dc:Bounds x="520" y="530" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0fvfhfz_di" bpmnElement="Activity_12rgdu2">
+        <dc:Bounds x="760" y="530" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0evkzxj_di" bpmnElement="Activity_0hbzisz">
+        <dc:Bounds x="910" y="530" width="100" height="80" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge id="Flow_01wpnbc_di" bpmnElement="Flow_01wpnbc">
         <di:waypoint x="620" y="570" />
