@@ -77,27 +77,12 @@
       <bpmn:outgoing>Flow_0g8eqr9</bpmn:outgoing>
       <bpmn:outgoing>Flow_1ywz2zm</bpmn:outgoing>
     </bpmn:exclusiveGateway>
-    <bpmn:intermediateThrowEvent id="Event_1mvzrz0" name="User 1 Informieren">
-      <bpmn:incoming>Flow_1lu1l08</bpmn:incoming>
-      <bpmn:outgoing>Flow_0jitp4u</bpmn:outgoing>
-      <bpmn:messageEventDefinition id="MessageEventDefinition_0nsawjw" messageRef="Message_301c5k9" camunda:expression="#{execution.getProcessEngineServices().getRuntimeService().createMessageCorrelation(&#39;SaldoGenuegend&#39;).setVariable(&#34;Saldo&#34;,true).correlate()}" />
-    </bpmn:intermediateThrowEvent>
-    <bpmn:intermediateThrowEvent id="Event_1e9ynrk" name="User 1 informieren">
-      <bpmn:incoming>Flow_1ywz2zm</bpmn:incoming>
-      <bpmn:outgoing>Flow_0bqbtr6</bpmn:outgoing>
-      <bpmn:messageEventDefinition id="MessageEventDefinition_06e6af5" messageRef="Message_301c5k9" camunda:expression="#{execution.getProcessEngineServices().getRuntimeService().createMessageCorrelation(&#39;SaldoGenuegend&#39;).setVariable(&#34;Saldo&#34;,false).correlate()}" />
-    </bpmn:intermediateThrowEvent>
     <bpmn:sequenceFlow id="Flow_01wpnbc" sourceRef="Activity_0z8t73q" targetRef="Gateway_07pz1fe" />
     <bpmn:sequenceFlow id="Flow_0g8eqr9" name="Ja" sourceRef="Gateway_07pz1fe" targetRef="Activity_12rgdu2" />
     <bpmn:sequenceFlow id="Flow_1ywz2zm" name="Nein" sourceRef="Gateway_07pz1fe" targetRef="Event_1e9ynrk" />
     <bpmn:sequenceFlow id="Flow_0y9qs1s" sourceRef="Activity_12rgdu2" targetRef="Activity_0hbzisz" />
     <bpmn:sequenceFlow id="Flow_1lu1l08" sourceRef="Activity_0hbzisz" targetRef="Event_1mvzrz0" />
     <bpmn:sequenceFlow id="Flow_0jitp4u" sourceRef="Event_1mvzrz0" targetRef="Event_0c5v6kl" />
-    <bpmn:intermediateThrowEvent id="Event_0c5v6kl" name="User 2 informieren">
-      <bpmn:incoming>Flow_0jitp4u</bpmn:incoming>
-      <bpmn:outgoing>Flow_0pwr2y3</bpmn:outgoing>
-      <bpmn:messageEventDefinition id="MessageEventDefinition_1eqehj6" messageRef="Message_1jtb1ls" camunda:expression="#{execution.getProcessEngineServices().getRuntimeService().createMessageCorrelation(&#39;SaldoGenuegend&#39;).setVariable(&#34;Anfrage,false).correlate()}" />
-    </bpmn:intermediateThrowEvent>
     <bpmn:sequenceFlow id="Flow_1q8gmby" sourceRef="Event_1hybq9t" targetRef="Activity_0z8t73q" />
     <bpmn:serviceTask id="Activity_0hbzisz" name="Betrag bei User 2 gutschreiben">
       <bpmn:incoming>Flow_0y9qs1s</bpmn:incoming>
@@ -107,14 +92,29 @@
       <bpmn:incoming>Flow_0g8eqr9</bpmn:incoming>
       <bpmn:outgoing>Flow_0y9qs1s</bpmn:outgoing>
     </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_0pwr2y3" sourceRef="Event_0c5v6kl" targetRef="Event_0ae8r55" />
+    <bpmn:sequenceFlow id="Flow_0bqbtr6" sourceRef="Event_1e9ynrk" targetRef="Event_1kbw4ds" />
+    <bpmn:intermediateThrowEvent id="Event_1mvzrz0" name="User 1 Informieren">
+      <bpmn:incoming>Flow_1lu1l08</bpmn:incoming>
+      <bpmn:outgoing>Flow_0jitp4u</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MessageEventDefinition_0nsawjw" messageRef="Message_301c5k9" camunda:expression="#{execution.getProcessEngineServices().getRuntimeService().createMessageCorrelation(&#39;SaldoGenuegend&#39;).setVariable(&#34;Saldo&#34;,true).correlate()}" />
+    </bpmn:intermediateThrowEvent>
+    <bpmn:intermediateThrowEvent id="Event_0c5v6kl" name="User 2 informieren">
+      <bpmn:incoming>Flow_0jitp4u</bpmn:incoming>
+      <bpmn:outgoing>Flow_0pwr2y3</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MessageEventDefinition_1eqehj6" messageRef="Message_1jtb1ls" camunda:expression="#{execution.getProcessEngineServices().getRuntimeService().createMessageCorrelation(&#39;SaldoGenuegend&#39;).setVariable(&#34;Anfrage,false).correlate()}" />
+    </bpmn:intermediateThrowEvent>
     <bpmn:endEvent id="Event_0ae8r55">
       <bpmn:incoming>Flow_0pwr2y3</bpmn:incoming>
     </bpmn:endEvent>
-    <bpmn:sequenceFlow id="Flow_0pwr2y3" sourceRef="Event_0c5v6kl" targetRef="Event_0ae8r55" />
-    <bpmn:sequenceFlow id="Flow_0bqbtr6" sourceRef="Event_1e9ynrk" targetRef="Event_1kbw4ds" />
     <bpmn:endEvent id="Event_1kbw4ds">
       <bpmn:incoming>Flow_0bqbtr6</bpmn:incoming>
     </bpmn:endEvent>
+    <bpmn:intermediateThrowEvent id="Event_1e9ynrk" name="User 1 informieren">
+      <bpmn:incoming>Flow_1ywz2zm</bpmn:incoming>
+      <bpmn:outgoing>Flow_0bqbtr6</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MessageEventDefinition_06e6af5" messageRef="Message_301c5k9" camunda:expression="#{execution.getProcessEngineServices().getRuntimeService().createMessageCorrelation(&#39;SaldoGenuegend&#39;).setVariable(&#34;Saldo&#34;,false).correlate()}" />
+    </bpmn:intermediateThrowEvent>
   </bpmn:process>
   <bpmn:process id="Process_1u7ky5a" isExecutable="false">
     <bpmn:sequenceFlow id="Flow_0mwrl7t" sourceRef="Activity_1udgt8t" targetRef="Event_0qehj6h" />
@@ -242,16 +242,16 @@
           <dc:Bounds x="660" y="507.5" width="60" height="27" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1580i4m_di" bpmnElement="Activity_0hbzisz">
+        <dc:Bounds x="910" y="530" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_189xn6h_di" bpmnElement="Activity_12rgdu2">
+        <dc:Bounds x="760" y="530" width="100" height="80" />
+      </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Event_004kuy4_di" bpmnElement="Event_1mvzrz0">
         <dc:Bounds x="1062" y="552" width="36" height="36" />
         <bpmndi:BPMNLabel>
           <dc:Bounds x="1042" y="598" width="56" height="27" />
-        </bpmndi:BPMNLabel>
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Event_0l2x1w0_di" bpmnElement="Event_1e9ynrk">
-        <dc:Bounds x="1062" y="642" width="36" height="36" />
-        <bpmndi:BPMNLabel>
-          <dc:Bounds x="1052" y="685" width="56" height="27" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Event_08q07vx_di" bpmnElement="Event_0c5v6kl">
@@ -260,17 +260,17 @@
           <dc:Bounds x="1142" y="522" width="56" height="27" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_1580i4m_di" bpmnElement="Activity_0hbzisz">
-        <dc:Bounds x="910" y="530" width="100" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_189xn6h_di" bpmnElement="Activity_12rgdu2">
-        <dc:Bounds x="760" y="530" width="100" height="80" />
-      </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Event_0ae8r55_di" bpmnElement="Event_0ae8r55">
         <dc:Bounds x="1242" y="552" width="36" height="36" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Event_1kbw4ds_di" bpmnElement="Event_1kbw4ds">
         <dc:Bounds x="1242" y="642" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0l2x1w0_di" bpmnElement="Event_1e9ynrk">
+        <dc:Bounds x="872" y="642" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="862" y="685" width="56" height="27" />
+        </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge id="Flow_01wpnbc_di" bpmnElement="Flow_01wpnbc">
         <di:waypoint x="620" y="570" />
@@ -286,9 +286,9 @@
       <bpmndi:BPMNEdge id="Flow_1ywz2zm_di" bpmnElement="Flow_1ywz2zm">
         <di:waypoint x="690" y="595" />
         <di:waypoint x="690" y="660" />
-        <di:waypoint x="1062" y="660" />
+        <di:waypoint x="872" y="660" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="728" y="643" width="23" height="14" />
+          <dc:Bounds x="702" y="643" width="23" height="14" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_0y9qs1s_di" bpmnElement="Flow_0y9qs1s">
@@ -314,7 +314,7 @@
         <di:waypoint x="1242" y="570" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_0bqbtr6_di" bpmnElement="Flow_0bqbtr6">
-        <di:waypoint x="1098" y="660" />
+        <di:waypoint x="908" y="660" />
         <di:waypoint x="1242" y="660" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNShape id="Participant_12lc8lj_di" bpmnElement="Participant_12lc8lj" isHorizontal="true">
@@ -353,8 +353,7 @@
         <di:waypoint x="971" y="284" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_1ejc03k_di" bpmnElement="Flow_1ejc03k">
-        <di:waypoint x="1062" y="660" />
-        <di:waypoint x="890" y="660" />
+        <di:waypoint x="890" y="642" />
         <di:waypoint x="890" y="340" />
         <di:waypoint x="947" y="283" />
       </bpmndi:BPMNEdge>
