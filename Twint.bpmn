@@ -45,12 +45,12 @@
     <bpmn:endEvent id="Event_1xtaf1k">
       <bpmn:incoming>Flow_0k4c5fl</bpmn:incoming>
     </bpmn:endEvent>
-    <bpmn:userTask id="Activity_0ftqhdn" name="Enpfänger und Betrag angeben" camunda:formRef="Form" camunda:formRefBinding="latest">
+    <bpmn:userTask id="Activity_0ftqhdn" name="Empfänger und Betrag angeben" camunda:formRef="Form" camunda:formRefBinding="latest">
       <bpmn:incoming>Flow_0i5p9r2</bpmn:incoming>
       <bpmn:incoming>Flow_1ebflao</bpmn:incoming>
       <bpmn:outgoing>Flow_0ym4cl0</bpmn:outgoing>
     </bpmn:userTask>
-    <bpmn:userTask id="Activity_1qilexz" name="Bestätigung">
+    <bpmn:userTask id="Activity_1qilexz" name="Bestätigung" camunda:formRef="Form" camunda:formRefBinding="latest">
       <bpmn:incoming>Flow_06ldmh9</bpmn:incoming>
       <bpmn:outgoing>Flow_0k4c5fl</bpmn:outgoing>
     </bpmn:userTask>
@@ -175,6 +175,7 @@
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_12abofd_di" bpmnElement="Activity_0ftqhdn">
         <dc:Bounds x="520" y="230" width="100" height="80" />
+        <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_0l4hcht_di" bpmnElement="Activity_1qilexz">
         <dc:Bounds x="1150" y="230" width="100" height="80" />
