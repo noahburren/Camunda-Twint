@@ -1,0 +1,33 @@
+{
+  "components": [
+    {
+      "label": "Empfänger",
+      "type": "textfield",
+      "layout": {
+        "row": "Row_1mo4and",
+        "columns": null
+      },
+      "id": "Field_0kyr86l",
+      "key": "varReceive"
+    },
+    {
+      "label": "Betrag",
+      "type": "number",
+      "layout": {
+        "row": "Row_0pub4rp",
+        "columns": null
+      },
+      "id": "Field_0443a0h",
+      "key": "varAmount"
+    }
+  ],
+  "type": "default",
+  "id": "Form_0qe18ja",
+  "exporter": {
+    "name": "Camunda Modeler",
+    "version": "5.35.0"
+  },
+  "executionPlatform": "Camunda Platform",
+  "executionPlatformVersion": "7.23.0",
+  "schemaVersion": 18
+}
