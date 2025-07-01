@@ -1,36 +1,95 @@
 <!DOCTYPE html>
 <html lang="de">
-  <head>
-    <meta charset="UTF-8" />
-    <title>Zahlung auswählen</title>
-  </head>
-  <body>
-    <h1>Zahlung auswählen</h1>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Twint – Zahlung starten</title>
+  <style>
+    /* --- (identische Styles für alle Seiten, s. u.) --- */
+    body{font-family:Arial,sans-serif;max-width:800px;margin:50px auto;padding:20px;background:#f5f5f5}
+    .container{background:#fff;padding:30px;border-radius:10px;box-shadow:0 2px 10px rgba(0,0,0,.1);text-align:center}
+    .step-indicator{display:flex;justify-content:space-between;margin:20px 0;font-size:14px}
+    .step{flex:1;padding:10px;background:#f8f9fa;border-radius:5px;margin:0 5px}
+    .active{background:#007bff;color:#fff}
+    .completed{background:#28a745;color:#fff}
+    .waiting{background:#fff3cd;border-left:4px solid #ffc107;padding:15px;border-radius:5px;margin:15px 0}
+    button{background:#007bff;color:#fff;border:0;padding:15px 30px;font-size:16px;border-radius:5px;cursor:pointer;transition:.3s;margin:10px}
+    button:hover{background:#0056b3}button:disabled{background:#ccc;cursor:not-allowed}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Twint Zahlung</h1>
+
+    <!-- Schritt‑Indikator -->
+    <div class="step-indicator">
+      <div class="step active" id="s1">1. Zahlung starten</div>
+      <div class="step"         id="s2">2. Details eingeben</div>
+      <div class="step"         id="s3">3. Bestätigung</div>
+      <div class="step"         id="s4">4. Abgeschlossen</div>
+    </div>
+
+    <!-- Start -->
+    <p>Klicken Sie auf den Button, um eine neue Zahlung zu starten.</p>
     <button id="startPayment">Zahlung senden auswählen</button>
 
-    <script>
-      const startPaymentBtn = document.getElementById("startPayment");
+    <!-- Warten -->
+    <div id="wait" class="waiting" style="display:none">
+      <h3>Warte auf Camunda …</h3>
+      <p>Bitte bestätigen Sie die Task <em>„Zahlung senden auswählen“</em> in Camunda.</p>
+      <small id="ticker">⏳</small>
+    </div>
 
-      startPaymentBtn.addEventListener("click", async () => {
-        try {
-          // Start den User1 Prozess
-          const response = await fetch(
-            "http://localhost:8080/engine-rest/process-definition/key/Process_06c2n2l/start",
-            {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({}),
-            }
-          );
-          if (!response.ok) throw new Error("Prozessstart fehlgeschlagen");
+    <div id="err" style="color:#dc3545;margin-top:15px"></div>
+  </div>
 
-          const data = await response.json();
-          alert("Prozess gestartet! Jetzt Empfänger und Betrag eingeben.");
-          window.location.href = "form.html?processInstanceId=" + data.id;
-        } catch (e) {
-          alert("Fehler: " + e.message);
-        }
-      });
-    </script>
-  </body>
+  <script>
+    let processInstanceId=null;
+
+    const btn   =document.getElementById('startPayment');
+    const wait  =document.getElementById('wait');
+    const errEl =document.getElementById('err');
+
+    function setStep(a){['s1','s2','s3','s4'].forEach((id,i)=>{
+        const el=document.getElementById(id);
+        el.className='step'+(i+1<a?' completed':i+1===a?' active':'');
+    });}
+
+    function showErr(msg){errEl.textContent=msg;}
+
+    async function findTask(key){
+      const r=await fetch(`http://localhost:8080/engine-rest/task?processInstanceId=${processInstanceId}&taskDefinitionKey=${key}`);
+      if(!r.ok)throw new Error('Task‑Abfrage fehlgeschlagen');
+      const tasks=await r.json();
+      return tasks.length?tasks[0]:null;
+    }
+
+    async function waitForCompletion(key){
+      for(let i=0;i<60;i++){
+        if(!(await findTask(key)))return;
+        await new Promise(r=>setTimeout(r,1000));
+      }
+      throw new Error('Timeout – Camunda hat nicht bestätigt');
+    }
+
+    btn.addEventListener('click',async()=>{
+      try{
+        setStep(1);showErr('');btn.disabled=true;wait.style.display='block';
+
+        const resp=await fetch('http://localhost:8080/engine-rest/process-definition/key/Process_06c2n2l/start',{
+          method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json'},
+          body:JSON.stringify({variables:{}})
+        });
+        if(!resp.ok)throw new Error('Prozess konnte nicht gestartet werden');
+        processInstanceId=(await resp.json()).id;
+
+        // auf Task “Activity_0yz0gc5” warten
+        await waitForCompletion('Activity_0yz0gc5');
+
+        // weiter zur Eingabeseite
+        location.href=`form.html?processInstanceId=${processInstanceId}`;
+      }catch(e){showErr(e.message);btn.disabled=false;}
+    });
+  </script>
+</body>
 </html>
