@@ -19,6 +19,17 @@
       },
       "id": "Field_0443a0h",
       "key": "varAmount"
+    },
+    {
+      "label": "Nachricht",
+      "type": "textarea",
+      "layout": {
+        "row": "Row_0dpmbg6",
+        "columns": null
+      },
+      "id": "Field_0dznzwx",
+      "key": "varMessage",
+      "defaultValue": "Es wurde keine Nachricht mitgeschickt"
     }
   ],
   "type": "default",
