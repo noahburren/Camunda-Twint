@@ -1,88 +1,21 @@
 <!DOCTYPE html>
 <html lang="de">
-  <head>
-    <meta charset="UTF-8" />
-    <title>Bestätigung</title>
-  </head>
-  <body>
-    <h1>Zahlung bestätigt</h1>
-    <p>
-      Die Zahlung wurde erfolgreich an <span id="empfaenger"></span> über
-      <span id="betrag"></span> CHF gesendet.
-    </p>
-    <a href="zahlung_auswaehlen.html">Neue Zahlung tätigen</a>
-
-    <script>
-      const params = new URLSearchParams(window.location.search);
-      const empfaenger = params.get("empfaenger");
-      const betrag = params.get("betrag");
-
-      document.getElementById("empfaenger").textContent = empfaenger || "-";
-      document.getElementById("betrag").textContent = betrag || "-";
-
-      const urlParams = new URLSearchParams(window.location.search);
-      const processInstanceId = urlParams.get("processInstanceId");
-
-      async function pollForConfirmation() {
-        try {
-          // Prüfe User Tasks für "Bestätigung" oder "Fehlermeldung"
-          const tasksResponse = await fetch(
-            `http://localhost:8080/engine-rest/task?processInstanceId=${processInstanceId}`
-          );
-          const tasks = await tasksResponse.json();
-
-          // Suche User Task "Bestätigung" oder "Fehlermeldung"
-          const confirmationTask = tasks.find(
-            (t) => t.taskDefinitionKey === "Activity_1qilexz"
-          );
-          const errorTask = tasks.find(
-            (t) => t.taskDefinitionKey === "Activity_1uc7iyv"
-          );
-
-          const messageDiv = document.getElementById("message");
-
-          if (confirmationTask) {
-            messageDiv.innerText = "Zahlung erfolgreich! Bitte bestätigen.";
-            // Optional: Button zum Bestätigen hinzufügen
-            if (!document.getElementById("confirmBtn")) {
-              const btn = document.createElement("button");
-              btn.id = "confirmBtn";
-              btn.textContent = "Bestätigen";
-              btn.onclick = async () => {
-                await fetch(
-                  `http://localhost:8080/engine-rest/task/${confirmationTask.id}/complete`,
-                  { method: "POST" }
-                );
-                alert("Prozess abgeschlossen.");
-                messageDiv.innerText = "Prozess abgeschlossen.";
-                btn.remove();
-              };
-              document.body.appendChild(btn);
-            }
-          } else if (errorTask) {
-            messageDiv.innerText =
-              "Zahlung fehlgeschlagen. Fehlermeldung anzeigen.";
-            // Optional: Button zum Zurück zur Eingabe
-            if (!document.getElementById("retryBtn")) {
-              const btn = document.createElement("button");
-              btn.id = "retryBtn";
-              btn.textContent = "Zurück zur Eingabe";
-              btn.onclick = () => {
-                window.location.href = `form.html?processInstanceId=${processInstanceId}`;
-              };
-              document.body.appendChild(btn);
-            }
-          } else {
-            // Noch keine User Tasks => Poll weiter
-            setTimeout(pollForConfirmation, 3000);
-          }
-        } catch (e) {
-          console.error("Polling Fehler:", e);
-          setTimeout(pollForConfirmation, 5000);
-        }
-      }
-
-      pollForConfirmation();
-    </script>
-  </body>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Twint – Zahlung abgeschlossen</title>
+  <style>
+    body{font-family:Arial,sans-serif;max-width:800px;margin:50px auto;padding:20px;background:#f5f5f5;text-align:center}
+    .box{background:#e7f3ff;padding:30px;border-radius:10px;box-shadow:0 2px 10px rgba(0,0,0,.1)}
+    button{background:#007bff;color:#fff;border:0;padding:15px 30px;font-size:16px;border-radius:5px;cursor:pointer;transition:.3s;margin-top:20px}
+    button:hover{background:#0056b3}
+  </style>
+</head>
+<body>
+  <div class="box">
+    <h1>✅ Zahlung erfolgreich!</h1>
+    <p>Ihre Zahlung wurde vollständig verarbeitet.</p>
+    <button onclick="location.href='index.html'">Neue Zahlung starten</button>
+  </div>
+</body>
 </html>

@@ -1,82 +1,122 @@
 <!DOCTYPE html>
 <html lang="de">
-  <head>
-    <meta charset="UTF-8" />
-    <title>Empfänger und Betrag angeben</title>
-  </head>
-  <body>
-    <h1>Empfänger und Betrag angeben</h1>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <title>Twint – Zahlungsdetails</title>
+  <style>
+    body{font-family:Arial,sans-serif;max-width:800px;margin:50px auto;padding:20px;background:#f5f5f5}
+    .container{background:#fff;padding:30px;border-radius:10px;box-shadow:0 2px 10px rgba(0,0,0,.1)}
+    label{display:block;margin:15px 0 5px;font-weight:700}
+    input,select{width:100%;padding:10px;border:1px solid #ddd;border-radius:5px;font-size:16px}
+    button{background:#007bff;color:#fff;border:0;padding:15px 30px;font-size:16px;border-radius:5px;cursor:pointer;transition:.3s;margin-top:20px}
+    button:hover{background:#0056b3}button:disabled{background:#ccc;cursor:not-allowed}
+    .waiting{background:#fff3cd;border-left:4px solid #ffc107;padding:15px;border-radius:5px;margin:15px 0;text-align:center}
+    .step-indicator{display:flex;justify-content:space-between;margin:20px 0;font-size:14px}
+    .step{flex:1;padding:10px;background:#f8f9fa;border-radius:5px;margin:0 5px}
+    .active{background:#007bff;color:#fff}.completed{background:#28a745;color:#fff}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Zahlungsdetails</h1>
 
-    <form id="paymentForm">
-      <label for="empfaenger">Empfänger:</label><br />
-      <input
-        type="text"
-        id="empfaenger"
-        name="empfaenger"
-        required
-      /><br /><br />
+    <div class="step-indicator">
+      <div class="step completed">1. Start</div>
+      <div class="step completed">2. Camunda OK</div>
+      <div class="step active">3. Details</div>
+      <div class="step">4. Abgeschlossen</div>
+    </div>
 
-      <label for="betrag">Betrag:</label><br />
-      <input
-        type="number"
-        id="betrag"
-        name="betrag"
-        min="0.01"
-        step="0.01"
-        required
-      /><br /><br />
+    <label for="recipient">Empfänger</label>
+    <select id="recipient">
+      <option value="">Empfänger auswählen …</option>
+      <option value="user2@example.com">User 2 (user2@example.com)</option>
+      <option value="max.mustermann@email.com">Max Mustermann</option>
+      <option value="anna.mueller@email.com">Anna Müller</option>
+    </select>
 
-      <button type="submit">Absenden</button>
-    </form>
+    <label for="amount">Betrag (CHF)</label>
+    <input id="amount" type="number" step="0.01" min="0.01" max="10000">
 
-    <script>
-      const urlParams = new URLSearchParams(window.location.search);
-      const processInstanceId = urlParams.get("processInstanceId");
+    <label for="message">Nachricht (optional)</label>
+    <input id="message" type="text" maxlength="200" placeholder="Verwendungszweck …">
 
-      document
-        .getElementById("paymentForm")
-        .addEventListener("submit", async (e) => {
-          e.preventDefault();
+    <button id="send">Zahlung senden</button>
 
-          const empfaenger = document.getElementById("empfaenger").value;
-          const betrag = parseFloat(document.getElementById("betrag").value);
+    <div id="wait" class="waiting" style="display:none">
+      <p>Ihre Zahlung wird verarbeitet …</p>
+      <small>⏳ Bitte bestätigen Sie die finale Task in Camunda.</small>
+    </div>
 
-          try {
-            // Task abrufen für diesen Prozess (User Task "Empfänger und Betrag angeben")
-            const tasksResponse = await fetch(
-              `http://localhost:8080/engine-rest/task?processInstanceId=${processInstanceId}&taskDefinitionKey=Activity_0ftqhdn`
-            );
-            const tasks = await tasksResponse.json();
-            if (tasks.length === 0) throw new Error("Keine User Task gefunden");
+    <div id="err" style="color:#dc3545;margin-top:15px"></div>
+  </div>
 
-            const taskId = tasks[0].id;
+  <script>
+    const qs = new URLSearchParams(location.search);
+    const processInstanceId = qs.get('processInstanceId');
+    if (!processInstanceId) location.href = 'index.html';
 
-            // Task mit Variablen abschließen (Empfänger + Betrag)
-            const completeResponse = await fetch(
-              `http://localhost:8080/engine-rest/task/${taskId}/complete`,
-              {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                  variables: {
-                    varReceive: { value: empfaenger, type: "String" },
-                    varAmount: { value: betrag, type: "Double" },
-                  },
-                }),
-              }
-            );
+    const btn = document.getElementById('send');
+    const errEl = document.getElementById('err');
+    const wait = document.getElementById('wait');
 
-            if (!completeResponse.ok)
-              throw new Error("Task konnte nicht abgeschlossen werden");
+    function showErr(m) { errEl.textContent = m; }
 
-            alert("Daten gesendet! Warte auf Bestätigung.");
-            window.location.href = `confirmation.html?processInstanceId=${processInstanceId}&empfaenger=${encodeURIComponent(
-              empfaenger
-            )}&betrag=${betrag}`;
-          } catch (err) {
-            alert("Fehler: " + err.message);
-          }
+    async function findTask(key) {
+      const r = await fetch(`http://localhost:8080/engine-rest/task?processInstanceId=${processInstanceId}&taskDefinitionKey=${key}`);
+      if (!r.ok) throw new Error('Task-Abfrage fehlgeschlagen');
+      const tasks = await r.json();
+      return tasks.length ? tasks[0] : null;
+    }
+
+    async function waitForCompletion(key) {
+      for (let i = 0; i < 60; i++) {
+        if (await findTask(key)) return;
+        await new Promise(r => setTimeout(r, 1000));
+      }
+      throw new Error('Timeout – Camunda hat nicht bestätigt');
+    }
+
+    btn.addEventListener('click', async () => {
+      try {
+        showErr('');
+        const recipient = document.getElementById('recipient').value;
+        const amount = parseFloat(document.getElementById('amount').value || 0);
+        const message = document.getElementById('message').value || '';
+
+        if (!recipient || amount <= 0) throw new Error('Bitte Empfänger und Betrag angeben');
+
+        btn.disabled = true;
+        wait.style.display = 'block';
+
+        const resp = await fetch('http://localhost:8080/engine-rest/message', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+          body: JSON.stringify({
+            messageName: 'UserInputReady',
+            processInstanceId: processInstanceId,
+            processVariables: {
+              recipient: { value: recipient, type: 'String' },
+              amount: { value: amount, type: 'Double' },
+              message: { value: message, type: 'String' }
+            }
+          })
         });
-    </script>
-  </body>
+
+        if (!resp.ok) throw new Error('Message konnte nicht gesendet werden');
+
+        // Jetzt auf die nächste User Task warten
+        await waitForCompletion('Activity_0ftqhdn');
+
+        // weiter zur Erfolgsmeldung
+        location.href = `confirmation.html?processInstanceId=${processInstanceId}`;
+      } catch (e) {
+        showErr(e.message);
+        btn.disabled = false;
+        wait.style.display = 'none';
+      }
+    });
+  </script>
+</body>
 </html>

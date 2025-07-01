@@ -26,7 +26,6 @@
       <bpmn:extensionElements />
       <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${Saldo == true}</bpmn:conditionExpression>
     </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="Flow_1ebflao" sourceRef="Activity_0yz0gc5" targetRef="Activity_0ftqhdn" />
     <bpmn:intermediateThrowEvent id="Event_1xu0zky" name="Zahlung senden an Twint">
       <bpmn:incoming>Flow_0ym4cl0</bpmn:incoming>
       <bpmn:outgoing>Flow_0v9vaup</bpmn:outgoing>
@@ -47,7 +46,7 @@
     </bpmn:endEvent>
     <bpmn:userTask id="Activity_0ftqhdn" name="Empfänger und Betrag angeben" camunda:formRef="Form" camunda:formRefBinding="latest">
       <bpmn:incoming>Flow_0i5p9r2</bpmn:incoming>
-      <bpmn:incoming>Flow_1ebflao</bpmn:incoming>
+      <bpmn:incoming>Flow_1c85x3l</bpmn:incoming>
       <bpmn:outgoing>Flow_0ym4cl0</bpmn:outgoing>
     </bpmn:userTask>
     <bpmn:userTask id="Activity_1qilexz" name="Bestätigung" camunda:formRef="Form" camunda:formRefBinding="latest">
@@ -61,8 +60,15 @@
     <bpmn:userTask id="Activity_0yz0gc5" name="Zahlung Senden auswählen">
       <bpmn:extensionElements />
       <bpmn:incoming>Flow_0bf39as</bpmn:incoming>
-      <bpmn:outgoing>Flow_1ebflao</bpmn:outgoing>
+      <bpmn:outgoing>Flow_10kolj8</bpmn:outgoing>
     </bpmn:userTask>
+    <bpmn:intermediateCatchEvent id="Event_02tb4gm" name="Warte auf Eingabe im Frontend">
+      <bpmn:incoming>Flow_10kolj8</bpmn:incoming>
+      <bpmn:outgoing>Flow_1c85x3l</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MessageEventDefinition_1lswaiq" messageRef="Message_3oeagv5" />
+    </bpmn:intermediateCatchEvent>
+    <bpmn:sequenceFlow id="Flow_10kolj8" sourceRef="Activity_0yz0gc5" targetRef="Event_02tb4gm" />
+    <bpmn:sequenceFlow id="Flow_1c85x3l" sourceRef="Event_02tb4gm" targetRef="Activity_0ftqhdn" />
   </bpmn:process>
   <bpmn:process id="Process_1u9y96s" name="Twint" isExecutable="true" camunda:historyTimeToLive="P30D">
     <bpmn:startEvent id="Event_1hybq9t" name="Anfrage des Benutzers erhalten">
@@ -140,6 +146,7 @@
   <bpmn:message id="Message_301c5k9" name="SaldoGenuegend" />
   <bpmn:message id="Message_1jtb1ls" name="Anfrage" />
   <bpmn:message id="Message_0cbs22i" name="Message_0cbs22i" />
+  <bpmn:message id="Message_3oeagv5" name="UserInputReady" />
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
     <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Collaboration_18n88dk">
       <bpmndi:BPMNShape id="Participant_09h1hs8_di" bpmnElement="Participant_09h1hs8" isHorizontal="true">
@@ -186,6 +193,12 @@
       <bpmndi:BPMNShape id="Activity_12hjm5m_di" bpmnElement="Activity_0yz0gc5">
         <dc:Bounds x="310" y="230" width="100" height="80" />
       </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_02tb4gm_di" bpmnElement="Event_02tb4gm">
+        <dc:Bounds x="442" y="252" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="434" y="295" width="56" height="40" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge id="Flow_0bf39as_di" bpmnElement="Flow_0bf39as">
         <di:waypoint x="258" y="270" />
         <di:waypoint x="310" y="270" />
@@ -225,8 +238,12 @@
           <dc:Bounds x="1111" y="252" width="13" height="14" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_1ebflao_di" bpmnElement="Flow_1ebflao">
+      <bpmndi:BPMNEdge id="Flow_10kolj8_di" bpmnElement="Flow_10kolj8">
         <di:waypoint x="410" y="270" />
+        <di:waypoint x="442" y="270" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1c85x3l_di" bpmnElement="Flow_1c85x3l">
+        <di:waypoint x="478" y="270" />
         <di:waypoint x="520" y="270" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNShape id="Participant_0ztplco_di" bpmnElement="Participant_0ztplco" isHorizontal="true">
